@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Classify your Image!</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body style="background-color:black">
+    <div id="maintext" style="position: relative; margin:auto; width:700px; height:200px; text-align:center; top:0; bottom: 0; left: 0; right: 0;">  
+      <h1 class="text-light mb-2"> Songify Your Emotion! </h1>
+      <h4 class="text-light mb-5"> Click the Capture button</h4>
+      <form action='/predict' method=post enctype=multipart/form-data name="myForm">
+         <div class="button-group">
+            <button id="btn-start" type="button" class="button">Start Streaming</button>
+            <button id="btn-stop" type="button" class="button">Stop Streaming</button>
+            <button id="btn-capture" type="submit" class="button">Capture</button>
+          </div>
+          
+          <!-- Video Element & Canvas -->
+          <div class="play-area">
+            <div class="play-area-sub">
+              <h3>The Stream</h3>
+              <video id="stream" width="320" height="240"></video>
+            </div>
+            <div class="play-area-sub">
+              <h3>The Capture</h3>
+              <canvas id="capture" width="320" height="240"></canvas>
+              <div id="snapshot"></div>
+            </div>
+          </div>
+        
+      </form>
+    </div>
+    
+   </body>
+
+    <script>
+       // The buttons to start & stop stream and to capture the image
+var btnStart = document.getElementById( "btn-start" );
+var btnStop = document.getElementById( "btn-stop" );
+var btnCapture = document.getElementById( "btn-capture" );
+
+// The stream & capture
+var stream = document.getElementById( "stream" );
+var capture = document.getElementById( "capture" );
+var snapshot = document.getElementById( "snapshot" );
+var Image;
+// The video stream
+var cameraStream = null;
+
+// Attach listeners
+btnStart.addEventListener( "click", startStreaming );
+btnStop.addEventListener( "click", stopStreaming );
+
+// Start Streaming
+function startStreaming() {
+
+var mediaSupport = 'mediaDevices' in navigator;
+
+if( mediaSupport && null == cameraStream ) {
+
+   navigator.mediaDevices.getUserMedia( { video: true } )
+   .then( function( mediaStream ) {
+
+      cameraStream = mediaStream;
+
+      stream.srcObject = mediaStream;
+
+      stream.play();
+   })
+   .catch( function( err ) {
+
+      console.log( "Unable to access camera: " + err );
+   });
+}
+else {
+
+   alert( 'Your browser does not support media devices.' );
+
+   return;
+}
+}
+
+// Stop Streaming
+function stopStreaming() {
+
+if( null != cameraStream ) {
+
+   var track = cameraStream.getTracks()[ 0 ];
+
+   track.stop();
+   stream.load();
+
+   cameraStream = null;
+}
+}
+
+btnCapture.addEventListener( "click", captureSnapshot );
+
+function captureSnapshot() {
+
+	if( null != cameraStream ) {
+
+		var ctx = capture.getContext( '2d' );
+		var img = new Image();
+
+		ctx.drawImage( stream, 0, 0, capture.width, capture.height );
+
+		img.src		= capture.toDataURL( "image/png" );
+		img.width	= 240;
+
+		snapshot.innerHTML = img;
+		snapshot.appendChild( img );
+      
+      console.log("Uploading...")
+    var form = document.getElementById('myForm');
+    var formData = new FormData(form);
+    formData.append("file", img);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/predict");
+
+    // check when state changes, 
+    xmlhttp.onreadystatechange = function() {
+
+    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        alert(xmlhttp.responseText);
+        }
+    }
+
+    xmlhttp.send(formData);
+    console.log(formData.get('file'));
+	}
+}
+
+    </script>
+
+    </html>

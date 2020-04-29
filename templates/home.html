@@ -10,11 +10,11 @@
     <div id="maintext" style="position: relative; margin:auto; width:700px; height:200px; text-align:center; top:0; bottom: 0; left: 0; right: 0;">  
       <h1 class="text-light mb-2"> Songify Your Emotion! </h1>
       <h4 class="text-light mb-5"> Click the Capture button</h4>
-      <form action='/predict' method=post enctype=multipart/form-data name="myForm">
+      <form  method=post enctype=multipart/form-data name="myForm">
          <div class="button-group">
             <button id="btn-start" type="button" class="button">Start Streaming</button>
             <button id="btn-stop" type="button" class="button">Stop Streaming</button>
-            <button id="btn-capture" type="submit" class="button">Capture</button>
+            <input id="btn-capture" type="button" class="button" value="Capture">
           </div>
           
           <!-- Video Element & Canvas -->
@@ -36,6 +36,7 @@
    </body>
 
     <script>
+      "use strict";
        // The buttons to start & stop stream and to capture the image
 var btnStart = document.getElementById( "btn-start" );
 var btnStop = document.getElementById( "btn-stop" );
@@ -107,30 +108,16 @@ function captureSnapshot() {
 
 		ctx.drawImage( stream, 0, 0, capture.width, capture.height );
 
-		img.src		= capture.toDataURL( "image/png" );
-		img.width	= 240;
+      fileData= canvas.toDataURL(image/png);
 
-		snapshot.innerHTML = img;
-		snapshot.appendChild( img );
-      
-      console.log("Uploading...")
-    var form = document.getElementById('myForm');
-    var formData = new FormData(form);
-    formData.append("file", img);
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "/predict");
+		$.ajax({
+         type:'POST',
+         url : 'http:127.0.0.1:5000/predict',
+         data: fileData
 
-    // check when state changes, 
-    xmlhttp.onreadystatechange = function() {
-
-    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        alert(xmlhttp.responseText);
-        }
-    }
-
-    xmlhttp.send(formData);
-    console.log(formData.get('file'));
-	}
+         
+      });
+}
 }
 
     </script>
